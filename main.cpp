@@ -18,12 +18,6 @@ char* ShiftArgs(int* argc, char*** argv)
     return result;
 }
 
-
-/*
-- Run Version 3 with a number of threads equal to 10 times the number of cores in your computer, 
-- and report both execution time and speedup. Comment on the results. 
-*/
-
 clock_t Clocker;
 void StartClock()
 {

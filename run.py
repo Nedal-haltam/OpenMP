@@ -48,5 +48,15 @@ plt.title('Speed Up vs Number of Threads')
 plt.xlabel('Number of Threads')
 plt.ylabel('Speed Up')
 plt.grid(True)
-
 plt.savefig('SpeedUp.png')
+
+
+print(end='\n\n')
+print(f'Executing Serially')
+SerialExecutionTime : float = float(Execute([SerialPath, BufferSize]).stdout)
+print(f'Executing Parallel on 120 Threads')
+Parallel10times = float(Execute([ParallelPath, BufferSize, '120']).stdout)
+
+print(f'Serial Execution time: {SerialExecutionTime}')
+print(f'Parallel Execution time on 120: {Parallel10times}')
+print(f'Speed Up of 120 Threads over serial is: {SerialExecutionTime / Parallel10times}')
