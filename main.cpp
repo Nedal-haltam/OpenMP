@@ -3,26 +3,39 @@
 #include <vector>
 #include <sstream>
 #include <ios>
+#include <assert.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 #include <iomanip>
 
+char* ShiftArgs(int* argc, char*** argv)
+{
+    assert(*argc > 0);
+    char* result = **argv;
+    (*argv) += 1;
+    (*argc) -= 1;
+    return result;
+}
+
 
 /*
-TODO: 
-    - report for sizes: 500, 1000, 5000, and 10000
-    - Modify Version 2 to solve the race condition. Show that your code now generates correct results.
+- Run Version 3 with a number of threads equal to 10 times the number of cores in your computer, 
+- and report both execution time and speedup. Comment on the results. 
 */
+
 clock_t Clocker;
 void StartClock()
 {
     Clocker = clock();
 }
-void EvaluateClock()
+double EvaluateClock(bool verbose = false)
 {
     clock_t t = clock() - Clocker;
-    std::cout << "Time taken: " << (double)(t) / CLOCKS_PER_SEC << "s\n";
+    double TimeTaken = (double)(t) / CLOCKS_PER_SEC;
+    if (verbose)
+        std::cout << "Time taken: " << TimeTaken << "s\n";
+    return TimeTaken;
 }
 
 double GetAverageSerial(std::vector<double>& vec)
@@ -43,71 +56,109 @@ double GetAverageParallel(std::vector<double>& vec)
     int ThreadCount = omp_get_num_threads();
 
     double sum = 0.0;
-    int LocalSize = vec.size() / ThreadCount;
-    int start = ThreadID * LocalSize;
-    int end = (ThreadID + 1) * LocalSize;
+    int SizeOverCount = vec.size() / ThreadCount;
+    int start = ThreadID * SizeOverCount;
+    int end = ((vec.size() <= ThreadCount || vec.size() % ThreadCount != 0) && ThreadID == ThreadCount - 1) ? vec.size() : (ThreadID + 1) * SizeOverCount;
+
     for (int i = start; i < end; i++) {
         sum += vec[i];
     }
     return sum / vec.size();
 }
-#endif
-
-#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
-int main(int argc, char* argv[]) {
-    std::cout << std::setprecision(10);
+void ParallelExecution(int argc, char** argv)
+{
+    std::string ProgramName = ShiftArgs(&argc, &argv);
+    double Average = 0;
     if (argc < 2)
     {
-        std::cout << "Size is not provided\n";
-        return 1;
+        std::cout << "Usage: " << ProgramName << " <Buffer size> <Number of threads>\n";
+        exit(EXIT_FAILURE);
     }
-    int size = strtol(argv[1], NULL, 10);
-    std::vector<double> arr = std::vector<double>(size);
+    int Size = strtol(ShiftArgs(&argc, &argv), NULL, 10);
+    if (Size == 0)
+    {
+        std::cout << "No average for Buffer size zero\n";
+        exit(EXIT_FAILURE);
+    }
+    int NumberOfThreads = strtol(ShiftArgs(&argc, &argv), NULL, 10);
     
+    std::vector<double> arr = std::vector<double>(Size);
     for (size_t i = 0; i < arr.size(); i++)
     {
         arr[i] = i;
     }
-#ifdef _OPENMP
-    double Average = 0;
     double correct = GetAverageSerial(arr);
 #ifdef RACE_COND
     do
     {
         Average = 0;
         StartClock();
-        #pragma omp parallel num_threads(12)
+        #pragma omp parallel num_threads(NumberOfThreads)
         {
             double avg = GetAverageParallel(arr);
             Average += avg;
         }
     } while((float)correct == (float)Average);
-    EvaluateClock();
-    std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
-    std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
+    double TimeTaken = EvaluateClock();
+    // std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
+    std::cout << TimeTaken << "\n";
+    // std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
 #else
     do
     {
         Average = 0;
         StartClock();
-        #pragma omp parallel num_threads(12)
+        #pragma omp parallel num_threads(NumberOfThreads)
         {
             double avg = GetAverageParallel(arr);
             #pragma omp critical
             Average += avg;
         }
     } while(0);
-    EvaluateClock();
+    double TimeTaken = EvaluateClock();
     // } while((float)correct == (float)Average);
-    std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
-    std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
+    // std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
+    std::cout << TimeTaken << "\n";
+    // std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
+#endif
+}
 #endif
 
-#else
+void SerialExecution(int argc, char** argv)
+{
+    std::string ProgramName = ShiftArgs(&argc, &argv);
+    if (argc < 1)
+    {
+        std::cout << "Usage: " << ProgramName << " <Buffer size>\n";
+        exit(EXIT_FAILURE);
+    }
+    int Size = strtol(ShiftArgs(&argc, &argv), NULL, 10);
+    if (Size == 0)
+    {
+        std::cout << "No average for Buffer size zero\n";
+        exit(EXIT_FAILURE);
+    }
+    
+    std::vector<double> arr = std::vector<double>(Size);
+    for (size_t i = 0; i < arr.size(); i++)
+    {
+        arr[i] = i;
+    }
+
     StartClock();
     double Average = GetAverageSerial(arr);
-    EvaluateClock();
-    std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
+    (void)Average;
+    double TimeTaken = EvaluateClock();
+    // std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
+    std::cout << TimeTaken << "\n";
+}
+
+int main(int argc, char** argv) {
+    std::cout << std::setprecision(10);
+#ifdef _OPENMP
+    ParallelExecution(argc, argv);
+#else
+    SerialExecution(argc, argv);
 #endif
     return 0;
 }
