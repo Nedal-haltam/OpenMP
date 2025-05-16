@@ -12,7 +12,6 @@
 /*
 TODO: 
     - report for sizes: 500, 1000, 5000, and 10000
-    - Implement a multi-threaded version of the program (with race condition) and display both calculated results and correct results. 
     - Modify Version 2 to solve the race condition. Show that your code now generates correct results.
 */
 clock_t Clocker;
@@ -69,13 +68,10 @@ int main(int argc, char* argv[]) {
     {
         arr[i] = i;
     }
-    std::cout << "INFO: Filled the array with numbers\n";
 #ifdef _OPENMP
-    std::cout << "INFO: Parallel execution\n";
     double Average = 0;
     double correct = GetAverageSerial(arr);
 #ifdef RACE_COND
-std::cout << "INFO: Race Condition\n";
     do
     {
         Average = 0;
@@ -85,8 +81,8 @@ std::cout << "INFO: Race Condition\n";
             double avg = GetAverageParallel(arr);
             Average += avg;
         }
-        EvaluateClock();
     } while((float)correct == (float)Average);
+    EvaluateClock();
     std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
     std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
 #else
@@ -100,21 +96,18 @@ std::cout << "INFO: Race Condition\n";
             #pragma omp critical
             Average += avg;
         }
-        EvaluateClock();
     } while(0);
+    EvaluateClock();
     // } while((float)correct == (float)Average);
     std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
     std::cout << "INFO: The correct average of size: " << arr.size() << " is: " << correct << "\n";
 #endif
 
 #else
-    std::cout << "INFO: Serial execution\n";
     StartClock();
     double Average = GetAverageSerial(arr);
-    std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
     EvaluateClock();
+    std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
 #endif
-
-
     return 0;
 }

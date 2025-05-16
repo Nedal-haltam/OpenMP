@@ -1,15 +1,17 @@
 
+DIRECTORY=Generated
 
-all: clean serial parallel parallelrace
+all: serial parallel parallelrace
 
-serial: main.cpp
-	g++ main.cpp -Wall -Wextra -Wpedantic -o serial.exe
+serial: clean main.cpp
+	g++ main.cpp -Wall -Wextra -Wpedantic -o $(DIRECTORY)/serial.exe
 
-parallelrace: main.cpp
-	g++ main.cpp -fopenmp -DRACE_COND -o race.exe
+parallelrace: clean main.cpp
+	g++ main.cpp -fopenmp -DRACE_COND -o $(DIRECTORY)/race.exe
 
-parallel: main.cpp
-	g++ main.cpp -fopenmp -o parallel.exe
+parallel: clean main.cpp
+	g++ main.cpp -fopenmp -o $(DIRECTORY)/parallel.exe
 
 clean:
-	del /Q *.exe
+	-if exist $(DIRECTORY) rmdir /S /Q $(DIRECTORY)
+	mkdir $(DIRECTORY)
