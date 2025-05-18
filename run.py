@@ -13,11 +13,13 @@ def Execute(args : list[str], verbose : bool = False) -> subprocess.CompletedPro
 
 
 
-Directory = os.getcwd() + r'\Generated'
+Directory = os.getcwd() + '\\Generated'
+BIN = Directory + '\\bin'
+IMAGES = Directory + '\\images'
 
-SerialPath = Directory + r'\serial.exe'
-RacePath = Directory + r'\race.exe'
-ParallelPath = Directory + r'\parallel.exe'
+SerialPath = BIN + '\\serial.exe'
+RacePath = BIN + '\\race.exe'
+ParallelPath = BIN + '\\parallel.exe'
 
 BufferSize = '20000000'
 NumberOfThreads = '10'
@@ -48,7 +50,7 @@ plt.title('Speed Up vs Number of Threads')
 plt.xlabel('Number of Threads')
 plt.ylabel('Speed Up')
 plt.grid(True)
-plt.savefig('Speed-Up.png')
+plt.savefig(f'{IMAGES}\\Speed-Up.png')
 
 
 print(end='\n\n')
