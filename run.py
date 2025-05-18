@@ -48,7 +48,7 @@ plt.title('Speed Up vs Number of Threads')
 plt.xlabel('Number of Threads')
 plt.ylabel('Speed Up')
 plt.grid(True)
-plt.savefig('SpeedUp.png')
+plt.savefig('Speed-Up.png')
 
 
 print(end='\n\n')
