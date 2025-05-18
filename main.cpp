@@ -68,7 +68,6 @@ void ParallelExecution(int argc, char** argv)
         std::cout << "Usage: " << ProgramName << " <Buffer size> <Number of threads> [options]\n";
         std::cout << "Options:\n";
         std::cout << "-v: print some info and time taken\n";
-        std::cout << "-DRACE_COND: to produce a race condition in the program\n";
         exit(EXIT_FAILURE);
     }
     int Size = strtol(ShiftArgs(&argc, &argv), NULL, 10);
@@ -154,7 +153,6 @@ void SerialExecution(int argc, char** argv)
 
     StartClock();
     double Average = GetAverageSerial(arr);
-    (void)Average;
     double TimeTaken = EvaluateClock(Verbose);
     if (Verbose)
         std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";

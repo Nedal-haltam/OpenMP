@@ -1,3 +1,0 @@
-The speed up over the serial execution was clearly observed but when we used 120 threads to calculate in parallel
-the speed up was not as expected. in fact the speed up of using less number of threads was sometimes higher than that 
-of the 120 threads becuase the overhead of hyper threading communication was significant
