@@ -65,9 +65,10 @@ void ParallelExecution(int argc, char** argv)
     double Average = 0;
     if (argc < 2)
     {
-        std::cout << "Usage: " << ProgramName << "[options] <Buffer size> <Number of threads>\n";
+        std::cout << "Usage: " << ProgramName << " <Buffer size> <Number of threads> [options]\n";
         std::cout << "Options:\n";
-        std::cout << "-v: print the time taken\n";
+        std::cout << "-v: print some info and time taken\n";
+        std::cout << "-DRACE_COND: to produce a race condition in the program\n";
         exit(EXIT_FAILURE);
     }
     int Size = strtol(ShiftArgs(&argc, &argv), NULL, 10);
@@ -77,7 +78,7 @@ void ParallelExecution(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
     int NumberOfThreads = strtol(ShiftArgs(&argc, &argv), NULL, 10);
-    bool Verbose = argc > 0 && ShiftArgs(&argc, &argv) == "-v";
+    bool Verbose = argc > 0 && (std::string)ShiftArgs(&argc, &argv) == "-v";
 
     std::vector<double> arr = std::vector<double>(Size);
     for (size_t i = 0; i < arr.size(); i++)
@@ -96,7 +97,7 @@ void ParallelExecution(int argc, char** argv)
             Average += avg;
         }
     } while((float)correct == (float)Average);
-    double TimeTaken = EvaluateClock();
+    double TimeTaken = EvaluateClock(Verbose);
     if (Verbose)
         std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
     else
@@ -115,7 +116,7 @@ void ParallelExecution(int argc, char** argv)
             Average += avg;
         }
     } while(0);
-    double TimeTaken = EvaluateClock();
+    double TimeTaken = EvaluateClock(Verbose);
     // } while((float)correct == (float)Average);
     if (Verbose)
         std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
@@ -132,9 +133,9 @@ void SerialExecution(int argc, char** argv)
     std::string ProgramName = ShiftArgs(&argc, &argv);
     if (argc < 1)
     {
-        std::cout << "Usage: " << ProgramName << " [options] <Buffer size>\n";
+        std::cout << "Usage: " << ProgramName << " <Buffer size> [options]\n";
         std::cout << "Options:\n";
-        std::cout << "-v: print the time taken\n";
+        std::cout << "-v: print some info and time taken\n";
         exit(EXIT_FAILURE);
     }
     int Size = strtol(ShiftArgs(&argc, &argv), NULL, 10);
@@ -154,7 +155,7 @@ void SerialExecution(int argc, char** argv)
     StartClock();
     double Average = GetAverageSerial(arr);
     (void)Average;
-    double TimeTaken = EvaluateClock();
+    double TimeTaken = EvaluateClock(Verbose);
     if (Verbose)
         std::cout << "INFO: Calculated average of size: " << arr.size() << " and the average is: " << Average << "\n";
     else
